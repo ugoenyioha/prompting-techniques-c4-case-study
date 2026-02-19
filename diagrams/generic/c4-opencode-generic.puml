@@ -1,0 +1,66 @@
+@startuml
+!include <C4/C4_Container>
+
+title OpenCode Repository - C4 Container View (Generic Pass)
+LAYOUT_LEFT_RIGHT()
+
+Person(dev, "Developer", "Uses OpenCode from terminal, desktop, or browser")
+Person(automation, "Automation Client", "Uses SDK/HTTP APIs for scripted workflows")
+
+System_Ext(project_fs, "Project Files + Git", "Local repositories, shell commands, and file system")
+System_Ext(model_apis, "Model Provider APIs", "OpenAI, Anthropic, Google, Bedrock, and other configured providers")
+System_Ext(mcp_servers, "MCP Servers", "Remote (HTTP/SSE) and local (stdio) MCP integrations")
+System_Ext(plugin_sources, "Plugin Sources", "npm/file:// plugin packages loaded at runtime")
+System_Ext(ext_saas, "External SaaS APIs", "GitHub APIs/JWKS, Discord API, Feishu API")
+
+System_Boundary(client_boundary, "OpenCode Clients") {
+  Container(cli_tui, "CLI/TUI Client", "Bun + yargs", "CLI commands, terminal UX, and in-process/remote server usage")
+  Container(web_app, "Web App", "Vite + Solid", "Session and workspace UI using SDK client")
+  Container(desktop_app, "Desktop App", "Tauri + Solid", "Desktop shell that starts/attaches a local sidecar server")
+}
+
+System_Boundary(local_boundary, "OpenCode Local Runtime (packages/opencode)") {
+  Container(http_api, "HTTP API Server", "Bun.serve + Hono", "REST/SSE routes for sessions, tools, projects, config, MCP, and compat APIs")
+  Container(session_engine, "Session Engine", "Session/agent orchestration", "Prompt loop, message lifecycle, tool execution, permissions, and events")
+  Container(integration_gateway, "Integration Gateway", "Provider + MCP + plugin runtime", "Model provider adapters, MCP client connections, plugin hooks/routes")
+  Container(config_env, "Config + Auth Loader", "Config/Auth/Env modules", "Merges config layers and resolves auth/env/runtime policies")
+  ContainerDb(sqlite_db, "Local SQLite", "bun:sqlite + Drizzle", "Projects, sessions, messages, parts, share metadata")
+  ContainerDb(local_state, "Local JSON State", "Filesystem JSON", "Legacy/session artifacts and auxiliary local state")
+}
+
+System_Boundary(cloud_boundary, "OpenCode Cloud Services (packages/function + infra)") {
+  Container(cloud_api, "Cloud API Worker", "Cloudflare Worker + Hono", "Share/session endpoints, GitHub app token exchange, webhook bridges")
+  Container(sync_do, "Sync Durable Object", "Cloudflare Durable Object", "WebSocket fanout and shared-session coordination")
+  ContainerDb(r2_bucket, "R2 Bucket", "Cloudflare R2", "Persisted shared session JSON objects")
+}
+
+Rel(dev, cli_tui, "Runs commands", "terminal")
+Rel(dev, desktop_app, "Uses desktop interface")
+Rel(dev, web_app, "Uses browser UI")
+Rel(automation, http_api, "Calls API directly", "HTTP/JSON + SSE")
+
+Rel(cli_tui, http_api, "Invokes local or attached server", "in-process fetch or HTTP")
+Rel(web_app, http_api, "Uses SDK client", "HTTP/JSON + SSE")
+Rel(desktop_app, cli_tui, "Spawns sidecar opencode serve process")
+Rel(desktop_app, http_api, "Checks health and calls API", "HTTP with optional Basic auth")
+
+Rel(http_api, session_engine, "Dispatches route actions and streams events")
+Rel(http_api, integration_gateway, "Uses MCP/plugin/compat integrations")
+Rel(config_env, http_api, "Applies auth, CORS, and endpoint policy")
+Rel(config_env, integration_gateway, "Provides provider/plugin/MCP configuration")
+
+Rel(session_engine, integration_gateway, "Requests models, tools, plugins, and MCP actions")
+Rel(session_engine, sqlite_db, "Reads/writes session state")
+Rel(session_engine, local_state, "Reads/writes auxiliary JSON state")
+Rel(session_engine, project_fs, "Reads/writes files and executes shell tools")
+Rel(session_engine, cloud_api, "Syncs shared sessions when enabled", "HTTPS")
+
+Rel(integration_gateway, model_apis, "Invokes model APIs", "provider SDK HTTP")
+Rel(integration_gateway, mcp_servers, "Connects to MCP servers", "stdio, HTTP, SSE")
+Rel(integration_gateway, plugin_sources, "Installs/loads plugin packages")
+
+Rel(cloud_api, sync_do, "Coordinates share streams")
+Rel(sync_do, r2_bucket, "Stores shared session data")
+Rel(cloud_api, ext_saas, "Calls external APIs", "HTTPS")
+
+@enduml

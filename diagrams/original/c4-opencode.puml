@@ -1,0 +1,72 @@
+@startuml
+!include <C4/C4_Container>
+
+title OpenCode Runtime - C4 Container View
+LAYOUT_LEFT_RIGHT()
+
+Person(dev, "Developer", "Runs opencode CLI and TUI workflows")
+Person(api_client, "API Client", "Calls opencode HTTP endpoints")
+
+System_Ext(llm_apis, "LLM Provider APIs", "OpenAI, Anthropic, Google, Bedrock, etc.")
+System_Ext(mcp_servers, "MCP Servers", "Remote HTTP/SSE and local stdio MCP endpoints")
+System_Ext(ext_plugins, "External Plugins", "Plugins loaded from npm or file://")
+System_Ext(project_fs, "Project Filesystem + Git", "Worktree, source files, shell tools")
+System_Ext(app_web, "app.opencode.ai", "Fallback proxied web UI")
+
+System_Boundary(opencode_system, "opencode (packages/opencode)") {
+  Container(cli, "CLI Runtime", "Bun + yargs", "Entry point commands, local in-process run, serve/web modes")
+
+  Container(api, "HTTP Server", "Bun.serve + Hono", "Routes: /session, /provider, /config, /mcp, /tool, /project, /event")
+  Container(compat, "Compat Routes", "Hono compat adapters", "OpenAI/Anthropic-compatible /v1 endpoints")
+
+  Container(plugin_rt, "Plugin Runtime", "@opencode-ai/plugin hooks", "Loads internal/external plugins and dispatches hook lifecycle")
+  Container(session_rt, "Session Orchestrator", "Session + SessionPrompt", "Agent loop, tool execution, permissions, compaction, message flow")
+  Container(provider_rt, "Provider Gateway", "AI SDK provider adapters", "Model/provider resolution, auth/options, language model creation")
+  Container(mcp_rt, "MCP Gateway", "Model Context Protocol SDK", "Connects MCP clients and exposes MCP tools/resources")
+  Container(config_rt, "Config + Env", "Config/Env/Auth modules", "Merges config layers, plugin discovery, env and auth resolution")
+
+  ContainerDb(sqlite_db, "SQLite DB", "bun:sqlite + Drizzle", "Projects, sessions, messages, parts, metadata")
+  ContainerDb(json_store, "JSON Storage", "Filesystem JSON blobs", "Session diffs/snapshots and legacy storage artifacts")
+
+  Container(sdk_pkg, "SDK Package", "@opencode-ai/sdk", "Typed client/server wrappers used by runtime and plugin authors")
+  Container(plugin_pkg, "Plugin Package", "@opencode-ai/plugin", "Plugin hooks/contracts shared by runtime and plugins")
+}
+
+Rel(dev, cli, "Runs commands", "terminal")
+Rel(api_client, api, "Calls API", "HTTP/JSON + SSE")
+
+Rel(cli, api, "Starts/attaches server and invokes endpoints", "in-process fetch or HTTP")
+Rel(cli, config_rt, "Reads flags and runtime config")
+
+Rel(api, compat, "Mounts /v1 compatibility surface")
+Rel(api, plugin_rt, "Executes http.request + http.route hooks")
+Rel(api, session_rt, "Invokes session routes and event stream")
+Rel(api, provider_rt, "Invokes provider/auth routes")
+Rel(api, mcp_rt, "Invokes MCP routes")
+Rel(api, config_rt, "Resolves auth, CORS, tool endpoint policy")
+Rel(api, app_web, "Proxies unmatched routes", "HTTPS")
+
+Rel(plugin_rt, ext_plugins, "Loads plugin modules", "npm/file://")
+Rel(plugin_rt, sdk_pkg, "Creates internal SDK client")
+Rel(plugin_rt, plugin_pkg, "Implements hook interfaces")
+
+Rel(session_rt, plugin_rt, "Triggers chat/tool/plugin hooks")
+Rel(session_rt, provider_rt, "Requests model inference")
+Rel(session_rt, mcp_rt, "Discovers and executes MCP tools/resources")
+Rel(session_rt, sqlite_db, "Stores sessions/messages/parts")
+Rel(session_rt, json_store, "Stores diffs and snapshots")
+Rel(session_rt, project_fs, "Reads/writes project via tools")
+
+Rel(provider_rt, config_rt, "Reads provider config/env/auth")
+Rel(provider_rt, plugin_rt, "Reads plugin auth loaders")
+Rel(provider_rt, llm_apis, "Calls model endpoints", "HTTPS")
+
+Rel(mcp_rt, config_rt, "Reads MCP server config and auth")
+Rel(mcp_rt, mcp_servers, "Connects and lists tools/resources", "stdio/HTTP/SSE")
+
+Rel(config_rt, project_fs, "Loads opencode.json, .opencode assets")
+Rel(config_rt, plugin_pkg, "Installs/targets plugin dependency")
+Rel(config_rt, sqlite_db, "Reads persisted auth/config-linked metadata")
+
+SHOW_LEGEND()
+@enduml

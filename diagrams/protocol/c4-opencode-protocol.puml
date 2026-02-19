@@ -1,0 +1,50 @@
+@startuml
+!include <C4/C4_Container>
+
+title OpenCode Runtime - C4 Container View (Protocol Pass)
+LAYOUT_LEFT_RIGHT()
+
+Person(dev, "Developer", "Runs opencode CLI workflows")
+Person(automation, "Automation Client", "Calls OpenCode HTTP APIs")
+
+System_Ext(project_fs, "Project Filesystem + Git", "Worktree files, git state, and shell-accessed tools")
+System_Ext(llm_apis, "LLM Provider APIs", "OpenAI, Anthropic, Google, Bedrock, and other configured providers")
+System_Ext(mcp_servers, "MCP Servers", "Remote HTTP/SSE MCP servers and local stdio MCP processes")
+System_Ext(plugin_sources, "Plugin Packages", "Plugin modules loaded from npm or file://")
+System_Ext(share_api, "OpenCode Share API", "Remote share/sync endpoints")
+
+System_Boundary(opencode, "opencode (packages/opencode)") {
+  Container(cli, "CLI Runtime", "Bun + yargs", "CLI command dispatch, local/in-process runtime invocation, attach mode")
+  Container(api, "HTTP API Server", "Bun.serve + Hono", "Exposes REST/SSE routes for session, config, provider, tool, MCP, and project operations")
+  Container(session_rt, "Session Orchestrator", "Session + SessionPrompt", "Runs agent loop, resolves tools, executes tool calls, updates session/message lifecycle")
+  Container(integration_rt, "Integration Gateway", "Provider + MCP + Plugin runtime", "Resolves model providers, MCP connections/tools, and plugin hooks/routes")
+  Container(config_rt, "Config + Auth Loader", "Config/Auth/Env", "Merges config sources and resolves runtime auth/env/policy")
+  ContainerDb(sqlite_db, "SQLite DB", "bun:sqlite + Drizzle", "Persistent state for projects, sessions, messages, parts, permissions, and share metadata")
+  ContainerDb(json_state, "JSON State Store", "Filesystem JSON", "Auxiliary state and migrated session diff artifacts")
+}
+
+Rel(dev, cli, "Runs commands", "terminal")
+Rel(automation, api, "Calls API", "HTTP/JSON + SSE")
+
+Rel(cli, api, "Calls local in-process server or attached remote server", "fetch or HTTP")
+Rel(cli, config_rt, "Loads runtime flags/config")
+
+Rel(api, session_rt, "Dispatches session and event route actions")
+Rel(api, integration_rt, "Dispatches provider/MCP/tool/plugin-facing routes")
+Rel(api, config_rt, "Applies auth/CORS/config policies")
+
+Rel(session_rt, integration_rt, "Uses provider models, MCP tools, and plugin hooks")
+Rel(session_rt, sqlite_db, "Reads/writes session/message/part state")
+Rel(session_rt, json_state, "Reads/writes JSON artifacts")
+Rel(session_rt, project_fs, "Invokes filesystem and shell tools")
+Rel(session_rt, share_api, "Syncs share updates when enabled", "HTTPS")
+
+Rel(integration_rt, config_rt, "Reads provider/plugin/MCP configuration")
+Rel(integration_rt, llm_apis, "Calls model provider endpoints", "HTTPS")
+Rel(integration_rt, mcp_servers, "Connects and executes MCP tools/resources", "stdio/HTTP/SSE")
+Rel(integration_rt, plugin_sources, "Installs/imports plugin modules")
+
+Rel(config_rt, project_fs, "Loads opencode.json and .opencode config inputs")
+
+SHOW_LEGEND()
+@enduml

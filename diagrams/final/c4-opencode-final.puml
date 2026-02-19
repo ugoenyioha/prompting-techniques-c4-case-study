@@ -1,0 +1,80 @@
+@startuml
+!include <C4/C4_Container>
+
+title OpenCode Runtime - C4 Container View (Final)
+LAYOUT_LEFT_RIGHT()
+
+Person(dev, "Developer", "Runs opencode via CLI, desktop, and app UI")
+Person(automation, "Automation Client (inferred)", "External/non-first-party callers of OpenCode HTTP APIs")
+
+System_Ext(project_fs, "Project Filesystem + Git", "Worktree files, shell commands, and VCS state")
+System_Ext(llm_apis, "LLM Provider APIs", "OpenAI, Anthropic, Google, Bedrock, and other configured providers")
+System_Ext(mcp_servers, "MCP Servers", "Remote HTTP/SSE and local stdio MCP servers")
+System_Ext(plugin_sources, "Plugin Package Sources", "npm and file:// plugin modules")
+System_Ext(ext_saas, "External SaaS APIs", "GitHub OIDC/JWKS, Discord API, Feishu API")
+System_Ext(share_gateway, "Share Gateway API", "External edge routing for share requests (out-of-repo)")
+System_Ext(app_web, "app.opencode.ai", "Fallback web app target for unmatched routes")
+
+System_Boundary(clients, "OpenCode Clients") {
+  Container(cli, "CLI Runtime", "Bun + yargs", "Command entrypoint, local/attach execution, and serve invocation")
+  Container(app_ui, "Web/App UI", "Solid + @opencode-ai/sdk", "Interactive UI using OpenCode API and SSE streams")
+  Container(desktop, "Desktop Shell", "Tauri", "Desktop host that manages sidecar server lifecycle")
+}
+
+System_Boundary(local_rt, "OpenCode Local Runtime (packages/opencode)") {
+  Container(api, "HTTP API Server", "Bun.serve + Hono", "REST/SSE routes for session, config, provider, tool, MCP, and project operations")
+  Container(session, "Session Engine", "Session + SessionPrompt", "Prompt/tool loop, lifecycle updates, permission checks, and event publishing")
+  Container(provider_rt, "Provider Runtime", "Provider module", "Model provider resolution, auth/config merge, outbound model invocation")
+  Container(mcp_rt, "MCP Gateway", "MCP module", "MCP server connectivity, transport negotiation, and tool/resource execution")
+  Container(plugin_rt, "Plugin Runtime", "Plugin module", "Internal/external plugin loading, route hooks, and tool hooks")
+  Container(policy, "Config + Auth Policy", "Config/Auth/Flag", "Config precedence, auth material loading, and runtime policy gates")
+  ContainerDb(sqlite_db, "SQLite DB", "bun:sqlite + Drizzle", "Durable relational state for projects, sessions, messages, parts, and share metadata")
+  ContainerDb(json_store, "JSON State Store", "Filesystem JSON", "Auxiliary storage and migrated JSON artifacts")
+}
+
+System_Boundary(cloud_share, "OpenCode Cloud Share (packages/function)") {
+  Container(share_api, "Share API Worker", "Cloudflare Worker + Hono", "Share create/sync/delete APIs and integration endpoints")
+  Container(sync_do, "Share Sync Durable Object", "Cloudflare Durable Object", "WebSocket fanout and share session coordination")
+  ContainerDb(r2_bucket, "Share Bucket", "Cloudflare R2", "Persisted shared session payloads")
+}
+
+Rel(dev, cli, "Runs commands", "terminal")
+Rel(dev, app_ui, "Uses UI")
+Rel(dev, desktop, "Uses desktop app")
+Rel(automation, api, "Calls API", "HTTP/JSON + SSE")
+
+Rel(desktop, cli, "Spawns sidecar opencode serve process")
+Rel(cli, api, "Calls in-process server or attached server", "fetch/HTTP")
+Rel(app_ui, api, "Uses SDK client for API and event streaming", "HTTP/JSON + SSE")
+
+Rel(api, session, "Dispatches session and route actions")
+Rel(api, policy, "Enforces auth/CORS/tool-endpoint policy")
+Rel(api, plugin_rt, "Mounts plugin-provided HTTP routes")
+Rel(api, app_web, "Proxies unmatched routes", "HTTPS")
+
+Rel(session, provider_rt, "Requests model execution")
+Rel(session, mcp_rt, "Discovers/executes MCP tools and resources")
+Rel(session, plugin_rt, "Triggers tool/chat hooks")
+Rel(session, sqlite_db, "Reads/writes session/message state")
+Rel(session, json_store, "Reads/writes JSON artifacts")
+Rel(session, project_fs, "Runs filesystem and shell tools")
+Rel(session, share_gateway, "Syncs shared session data via gateway API", "HTTPS")
+
+Rel(provider_rt, policy, "Reads config/auth/env")
+Rel(provider_rt, llm_apis, "Calls model provider endpoints", "HTTPS")
+
+Rel(mcp_rt, policy, "Reads MCP configuration")
+Rel(mcp_rt, mcp_servers, "Connects via stdio/HTTP/SSE")
+
+Rel(plugin_rt, policy, "Reads plugin config and dependencies")
+Rel(plugin_rt, plugin_sources, "Installs/imports plugin packages")
+
+Rel(policy, project_fs, "Loads opencode.json and .opencode config/auth inputs")
+
+Rel(share_gateway, share_api, "Forwards share create/sync/delete requests", "HTTPS")
+Rel(share_api, sync_do, "Coordinates real-time share updates")
+Rel(sync_do, r2_bucket, "Stores shared session objects")
+Rel(share_api, ext_saas, "Calls external APIs", "HTTPS")
+
+SHOW_LEGEND()
+@enduml
