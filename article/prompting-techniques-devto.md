@@ -3,7 +3,7 @@ title: "Prompting Techniques That Actually Work: Lessons from Automating Archite
 published: false
 description: "We used AI to produce C4 architecture diagrams for a real codebase. Over five iterations we turned useful-but-fragile output into reliable, structured results. Here are the ten techniques that made it work."
 tags: ai, architecture, prompting, productivity
-cover_image: https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-final.svg
+cover_image: https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-final.png
 canonical_url:
 series:
 ---
@@ -30,7 +30,7 @@ Produce a C4 container diagram for this repository.
 
 And here's what we got:
 
-![The generic-pass diagram — notice the "Integration Gateway" box that merges three different subsystems into one](https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-generic.svg)
+![The generic-pass diagram — notice the "Integration Gateway" box that merges three different subsystems into one](https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-generic.png)
 
 A valid diagram with reasonable container names, correct syntax, and... a giant box labeled "Integration Gateway" that smooshed together three completely different subsystems (an LLM provider adapter, an MCP transport layer, and a plugin system).
 
@@ -465,7 +465,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 **Result:** 6 local containers, 31 lines of notes, no scoring, no alternatives, merged Integration Gateway.
 **Verdict:** Valid but useless for real decisions.
 
-![Iteration 1: The generic pass — note the merged "Integration Gateway" and lack of client/cloud boundaries](https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-generic.svg)
+![Iteration 1: The generic pass — note the merged "Integration Gateway" and lack of client/cloud boundaries](https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-generic.png)
 
 ### Iteration 2: Protocol prompt
 
@@ -473,7 +473,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 **Result:** 7 local containers, 101 lines across 12 sections, evidence-anchored claims.
 **Verdict:** Much better notes, but still merged the Integration Gateway. No mechanism to force evaluation of alternatives.
 
-![Iteration 2: The protocol pass — better structure, but "Integration Gateway" is still one merged box](https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-protocol.svg)
+![Iteration 2: The protocol pass — better structure, but "Integration Gateway" is still one merged box](https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-protocol.png)
 
 ### Iteration 3: Agentic prompt (the breakthrough)
 
@@ -481,7 +481,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 **Result:** 8 local containers (Provider, MCP, Plugin all split out), 146 lines across 14 sections, Draft A vs B scoring table.
 **Verdict:** First iteration that would survive a design review. The lossiness check killed the conservative merge.
 
-![Iteration 3: The agentic pass — Provider Runtime, MCP Gateway, and Plugin Runtime are now separate containers](https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-agentic.svg)
+![Iteration 3: The agentic pass — Provider Runtime, MCP Gateway, and Plugin Runtime are now separate containers](https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-agentic.png)
 
 ### Iteration 4: Final prompt + checker
 
@@ -495,7 +495,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 **Result:** Checker confidence: 90. One remaining PARTIAL that's a genuine out-of-repo limitation.
 **Verdict:** Publishable.
 
-![Iteration 5: The final diagram — Share Gateway API added, Automation Client marked as "(inferred)", fallback proxy included](https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-final.svg)
+![Iteration 5: The final diagram — Share Gateway API added, Automation Client marked as "(inferred)", fallback proxy included](https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-final.png)
 
 The progression from iteration 1 to 5 wasn't about the AI getting smarter. It was about the prompt getting more rigorous. Same model. Different methodology. Different results.
 
