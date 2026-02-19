@@ -1,22 +1,22 @@
 ---
 title: "Prompting Techniques That Actually Work: Lessons from Automating Architecture Analysis"
 published: false
-description: "We used AI to produce C4 architecture diagrams for a real codebase. Over five iterations we went from 'meh' to 'catches bugs humans missed.' Here are the ten techniques that made it work."
+description: "We used AI to produce C4 architecture diagrams for a real codebase. Over five iterations we turned useful-but-fragile output into reliable, structured results. Here are the ten techniques that made it work."
 tags: ai, architecture, prompting, productivity
 cover_image: https://gist.githubusercontent.com/ugoenyioha/0cd30cfdc88f6e4a531d7ae73e2c67b9/raw/c4-opencode-final.svg
 canonical_url:
 series:
 ---
 
-You've been there. You give an AI a meaty task — "analyze this codebase," "write a threat model," "design the API surface" — and you get back something that's... fine. Technically correct. Covers the bases. And completely useless for any real decision-making.
+You've been there. You give an AI a meaty task — "analyze this codebase," "write a threat model," "design the API surface" — and you get back something useful. It works for the repo you're looking at. But try it on a different codebase and the quality is hit or miss. The output is sensitive to the structure of the project, the naming conventions, and whatever the model happens to latch onto that day.
 
-It reads like the AI played it safe. Because it did.
+The result isn't bad. It's just not reliable. And for anything you want to repeat across projects or hand to a team, reliability is what matters.
 
-This article is about how to stop getting safe, bland output and start getting output that's genuinely useful — the kind you'd put in a pull request, hand to a new team member, or use to make actual architectural decisions.
+This article is about how to take AI output that works once and make it work consistently — structured, evidence-grounded, and reproducible regardless of the target repository.
 
-We'll walk through ten prompting techniques, each one a standalone concept you can use tomorrow on whatever you're working on. To keep things concrete, we'll use a running example: we asked AI to produce architecture diagrams for a real open-source codebase, and we iteratively improved the prompts until the output went from "generic and forgettable" to "catches bugs humans missed." But the techniques themselves apply to any complex task — threat models, dependency audits, API docs, migration plans, you name it.
+We'll walk through ten prompting techniques, each one a standalone concept you can use tomorrow on whatever you're working on. To keep things concrete, we'll use a running example: we used AI to generate C4 architecture diagrams for [OpenCode](https://github.com/sst/opencode), an open-source AI coding assistant built with TypeScript, Bun, and the Model Context Protocol. Over five iterations we improved the prompts until the output was structured, evidence-backed, and reproducible. But the techniques themselves apply to any complex task — threat models, dependency audits, API docs, migration plans, you name it.
 
-Let's start with where things went wrong.
+Let's start with where things started.
 
 ---
 
