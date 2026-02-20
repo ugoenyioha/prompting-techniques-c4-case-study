@@ -34,9 +34,9 @@ And here's what we got:
 
 A valid diagram with reasonable container names, correct syntax, and... a giant box labeled "Integration Gateway" that smooshed together three completely different subsystems (an LLM provider adapter, an MCP transport layer, and a plugin system).
 
-The [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) were 31 lines long. No scoring. No alternatives considered. No evidence that the AI had actually thought about the tradeoffs. It had produced the architectural equivalent of "this meeting could have been an email."
+The [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) were 31 lines long. No scoring. No alternatives considered. No evidence trail. It was a useful starting point for this particular codebase, but there was nothing in the process that would make the result reliable if you pointed it at a different repo tomorrow.
 
-The problem wasn't the AI. The problem was us. We'd given it a vague task and gotten a vague answer. That's not a bug — that's cause and effect.
+The problem wasn't the AI. The problem was the prompt. We'd given it a vague task with no methodology, and gotten output that reflected exactly that.
 
 > **The core insight we kept coming back to:** For complex analytical tasks, the prompt isn't just an input. It's the methodology. If you give the AI a rigorous process to follow, it produces rigorous output. If you give it a one-liner, it wings it.
 
@@ -463,7 +463,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 
 **Techniques:** None, really. Just "make a diagram." ([prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-1-generic-prompt.md) | [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) | [diagram source](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/diagrams/generic/c4-opencode-generic.puml))
 **Result:** 6 local containers, 31 lines of notes, no scoring, no alternatives, merged Integration Gateway.
-**Verdict:** Valid but useless for real decisions.
+**Verdict:** Useful as a starting point, but not structured or reproducible enough to trust across different codebases.
 
 [![Iteration 1: The generic pass — note the merged "Integration Gateway" and lack of client/cloud boundaries](https://raw.githubusercontent.com/ugoenyioha/devto-blog-assets/main/prompting-techniques/c4-opencode-generic.png)](https://raw.githubusercontent.com/ugoenyioha/prompting-techniques-c4-case-study/main/diagrams/generic/c4-opencode-generic.svg)
 
