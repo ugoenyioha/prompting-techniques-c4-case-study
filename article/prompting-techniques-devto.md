@@ -14,7 +14,7 @@ The result isn't bad. It's just not reliable. And for anything you want to repea
 
 This article is about how to take AI output that works once and make it work consistently — structured, evidence-grounded, and reproducible regardless of the target repository.
 
-We'll walk through ten prompting techniques, each one a standalone concept you can use tomorrow on whatever you're working on. To keep things concrete, we'll use a running example: we used AI to generate C4 architecture diagrams for [OpenCode](https://github.com/sst/opencode), an open-source AI coding assistant built with TypeScript, Bun, and the Model Context Protocol. Over five iterations we improved the prompts until the output was structured, evidence-backed, and reproducible. But the techniques themselves apply to any complex task — threat models, dependency audits, API docs, migration plans, you name it.
+We'll walk through ten prompting techniques, each one a standalone concept you can use tomorrow on whatever you're working on. To keep things concrete, we'll use a running example: we used AI to generate C4 architecture diagrams for [OpenCode](https://github.com/anomalyco/opencode), an open-source AI coding assistant built with TypeScript, Bun, and the Model Context Protocol. Over five iterations we improved the prompts until the output was structured, evidence-backed, and reproducible. But the techniques themselves apply to any complex task — threat models, dependency audits, API docs, migration plans, you name it.
 
 Let's start with where things started.
 
@@ -609,4 +609,4 @@ Write your prompts like you'd write process documentation for a sharp but new te
 
 ---
 
-_This article is based on a real five-iteration architecture analysis of the [OpenCode](https://github.com/sst/opencode) codebase. All prompt snippets, scoring tables, checker findings, and corrections are from actual analysis artifacts. The generator prompt, checker prompt, analysis notes, and correctness reports are all available in the [companion repository](https://github.com/ugoenyioha/prompting-techniques-c4-case-study)._
+_This article is based on a real five-iteration architecture analysis of the [OpenCode](https://github.com/anomalyco/opencode) codebase. All prompt snippets, scoring tables, checker findings, and corrections are from actual analysis artifacts. The generator prompt, checker prompt, analysis notes, and correctness reports are all available in the [companion repository](https://github.com/ugoenyioha/prompting-techniques-c4-case-study)._
