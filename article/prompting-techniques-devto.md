@@ -22,7 +22,7 @@ Let's start with where things started.
 
 ## The "good enough" trap
 
-Here's the prompt we started with, more or less:
+Here's the [prompt we started with](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-1-generic-prompt.md), more or less:
 
 ```
 Produce a C4 container diagram for this repository.
@@ -34,7 +34,7 @@ And here's what we got:
 
 A valid diagram with reasonable container names, correct syntax, and... a giant box labeled "Integration Gateway" that smooshed together three completely different subsystems (an LLM provider adapter, an MCP transport layer, and a plugin system).
 
-The analysis notes were 31 lines long. No scoring. No alternatives considered. No evidence that the AI had actually thought about the tradeoffs. It had produced the architectural equivalent of "this meeting could have been an email."
+The [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) were 31 lines long. No scoring. No alternatives considered. No evidence that the AI had actually thought about the tradeoffs. It had produced the architectural equivalent of "this meeting could have been an email."
 
 The problem wasn't the AI. The problem was us. We'd given it a vague task and gotten a vague answer. That's not a bug — that's cause and effect.
 
@@ -87,7 +87,7 @@ Keep container-level abstraction unless explicitly requested otherwise.
 
 Three lines. The model immediately knows its role, what it's producing, and what abstraction level to stay at. Everything that follows is interpreted through that frame — when it later reads about provider adapters and MCP transports, it's thinking "how does this map to a container?" rather than "let me summarize this TypeScript project."
 
-> **In our project:** Switching to instruction-first was the first change we made, and it immediately sharpened the output. The model stopped producing generic summaries and started producing architecture analysis. Small change, big difference.
+> **In our project:** Switching to instruction-first was the first change we made ([see the protocol prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-2-protocol-prompt.md)), and it immediately sharpened the output. The model stopped producing generic summaries and started producing architecture analysis. Small change, big difference.
 
 ---
 
@@ -128,7 +128,7 @@ Freeform output has three failure modes:
 
 3. **Reviewers get fatigued.** Scanning prose for the one claim that matters is exhausting. Named sections let reviewers jump directly to what they care about.
 
-> **In our project:** Our first-pass analysis notes were 31 lines across 3 freeform sections. By the final pass, we had 145 lines across 17 structured sections — scope, execution boundaries, entry points, interfaces, flows, dual drafts, scoring table, evidence anchors, self-critique, and more. The final version is longer, but every line serves a purpose. A reviewer can jump straight to "Draft scoring table" to check whether the model actually evaluated alternatives, or to "Inferred claims register" to see what's uncertain.
+> **In our project:** Our [first-pass analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) were 31 lines across 3 freeform sections. By the [final pass](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-final.md), we had 145 lines across 17 structured sections — scope, execution boundaries, entry points, interfaces, flows, dual drafts, scoring table, evidence anchors, self-critique, and more. The final version is longer, but every line serves a purpose. A reviewer can jump straight to "Draft scoring table" to check whether the model actually evaluated alternatives, or to "Inferred claims register" to see what's uncertain.
 
 ---
 
@@ -161,9 +161,9 @@ When you ask a model to do everything at once, it holds the entire task in worki
 
 With phases, that gap is visible immediately. If Phase 1 lists five execution boundaries and misses three, you can catch it before Phase 3 builds a diagram on a faulty foundation.
 
-> **In our project:** We used a five-phase workflow: discovery (find all execution boundaries, entry points, interfaces, dependencies), flow tracing (follow 2-4 end-to-end paths through the code), draft modeling (create two alternative container models), selection (score and pick one), and finalization (render, validate, self-check).
+> **In our project:** We used a five-phase workflow: discovery (find all execution boundaries, entry points, interfaces, dependencies), flow tracing (follow 2-4 end-to-end paths through the code), draft modeling (create two alternative container models), selection (score and pick one), and finalization (render, validate, self-check). You can see this phasing in the [agentic prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-3-agentic-prompt.md).
 >
-> The difference was dramatic. Our protocol pass, which used phases, found five execution boundaries. Our agentic pass, with more explicit phasing, found eight — including the desktop sidecar lifecycle, the app UI runtime, and the cloud worker boundary that the earlier pass had missed entirely.
+> The difference was dramatic. Our [protocol pass](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-protocol.md), which used phases, found five execution boundaries. Our [agentic pass](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-agentic.md), with more explicit phasing, found eight — including the desktop sidecar lifecycle, the app UI runtime, and the cloud worker boundary that the earlier pass had missed entirely.
 
 ---
 
@@ -203,7 +203,7 @@ The rubric criteria should reflect what your audience actually cares about, not 
 
 Notice that "simplicity" isn't a criterion. If it were, the model would always pick the simpler draft. Instead, we have "readability" (which rewards clarity) and "boundary quality" (which penalizes oversimplification). This is a deliberate design choice — the rubric encodes your values.
 
-> **In our project:** The scoring table told the whole story:
+> **In our project:** The [scoring table](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-agentic.md) told the whole story:
 >
 > | Draft      | Fidelity | Explanatory power | Readability | Boundary quality | Total |
 > | ---------- | -------: | ----------------: | ----------: | ---------------: | ----: |
@@ -239,7 +239,7 @@ The "inferred" marker is important. Some claims are genuinely inferred — and t
 
 Here's something we didn't expect: requiring evidence anchors doesn't just help reviewers verify claims. It changes how the model reasons. When the model knows it has to cite a file path for every claim, it actually goes and looks at the code instead of pattern-matching on names. The evidence requirement turns the model from a plausible-text generator into something closer to an analyst.
 
-> **In our project:** The difference between our generic pass and our final pass is stark.
+> **In our project:** The difference between our [generic pass](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) and our [final pass](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-final.md) is stark.
 >
 > Generic pass:
 >
@@ -285,7 +285,7 @@ The four impact dimensions aren't arbitrary — they're the four most common rea
 
 Without a lossiness check, the model's implicit rule is "merge unless there's a strong reason to split." With a lossiness check, the rule becomes "split unless the loss is genuinely low." That single flip is why our agentic pass produced eight containers where our generic pass produced six.
 
-> **In our project:** Here's the actual lossiness check the model produced for its "merge everything" draft:
+> **In our project:** Here's the actual lossiness check the model produced ([from the agentic analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-agentic.md)) for its "merge everything" draft:
 >
 > > **Lossiness check on merged `Session + Integrations`:**
 > >
@@ -329,7 +329,7 @@ Three things matter in this snippet:
 
 3. **Separate hallucinations from omissions** — Something being wrong (hallucination) and something being missing (omission) require different fixes. Flagging them separately makes the correction step cleaner.
 
-> **In our project:** Our checker audited 18 claims and found 16 fully verified. The two that weren't? Both were real issues the generator had missed:
+> **In our project:** Our [checker](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/checker-prompt.md) audited 18 claims and found 16 fully verified ([full correctness report](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/correctness-reports/c4-correctness-report-final.md)). The two that weren't? Both were real issues the generator had missed:
 >
 > | Claim                                    | Status  | What was wrong                                                                                                                                                          |
 > | ---------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -362,7 +362,7 @@ If issues are found:
 
 "Do not expand scope" is the critical constraint. Without it, correction loops snowball. The model sees an opportunity to improve something adjacent, makes the improvement, and suddenly the correction has become a rewrite.
 
-> **In our project:** The checker's correction plan had four items:
+> **In our project:** The checker's [correction plan](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/correctness-reports/c4-correctness-report-final.md) had four items:
 >
 > 1. Relabel the session-to-share edge to stop implying direct route parity
 > 2. Add a gateway external system to represent the unmodeled intermediary
@@ -426,7 +426,7 @@ Each cycle makes the system more reliable. The prompt accumulates institutional 
 > implementation anchor exists.
 > ```
 >
-> After applying these changes and re-running the checker, confidence went from 84 to 90. The remaining warning (share gateway translation being out-of-repo) is a genuine limitation, not a fixable gap. That's the right outcome — an accurate representation of what the code contains, with honest markers for what it doesn't.
+> After applying these changes and re-running the checker, confidence went from 84 to 90 ([post-correction report](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/correctness-reports/c4-correctness-report-final-postfix.md)). The remaining warning (share gateway translation being out-of-repo) is a genuine limitation, not a fixable gap. That's the right outcome — an accurate representation of what the code contains, with honest markers for what it doesn't.
 
 ---
 
@@ -461,7 +461,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 
 ### Iteration 1: Generic prompt
 
-**Techniques:** None, really. Just "make a diagram."
+**Techniques:** None, really. Just "make a diagram." ([prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-1-generic-prompt.md) | [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-generic.md) | [diagram source](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/diagrams/generic/c4-opencode-generic.puml))
 **Result:** 6 local containers, 31 lines of notes, no scoring, no alternatives, merged Integration Gateway.
 **Verdict:** Valid but useless for real decisions.
 
@@ -469,7 +469,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 
 ### Iteration 2: Protocol prompt
 
-**Added:** Instruction-first, structured output, evidence anchors, phased discovery.
+**Added:** Instruction-first, structured output, evidence anchors, phased discovery. ([prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-2-protocol-prompt.md) | [reasoning protocol](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/reasoning-protocol.md) | [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-protocol.md) | [diagram source](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/diagrams/protocol/c4-opencode-protocol.puml))
 **Result:** 7 local containers, 101 lines across 12 sections, evidence-anchored claims.
 **Verdict:** Much better notes, but still merged the Integration Gateway. No mechanism to force evaluation of alternatives.
 
@@ -477,7 +477,7 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 
 ### Iteration 3: Agentic prompt (the breakthrough)
 
-**Added:** Dual drafts, scoring rubric, lossiness checks, prompt chaining.
+**Added:** Dual drafts, scoring rubric, lossiness checks, prompt chaining. ([prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/iteration-3-agentic-prompt.md) | [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-agentic.md) | [diagram source](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/diagrams/agentic/c4-opencode-agentic.puml))
 **Result:** 8 local containers (Provider, MCP, Plugin all split out), 146 lines across 14 sections, Draft A vs B scoring table.
 **Verdict:** First iteration that would survive a design review. The lossiness check killed the conservative merge.
 
@@ -485,13 +485,13 @@ Let's zoom out and see how these techniques compound. Here's what happened acros
 
 ### Iteration 4: Final prompt + checker
 
-**Added:** Independent checker, correction loops, feedback into generator.
+**Added:** Independent checker, correction loops, feedback into generator. ([generator prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/generator-prompt.md) | [checker prompt](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/prompts/checker-prompt.md) | [correctness report](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/correctness-reports/c4-correctness-report-final.md) | [analysis notes](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/analysis-notes/c4-analysis-notes-final.md))
 **Result:** Same 8 containers, plus explicit share gateway, inferred markers, fallback proxy. Checker confidence: 84.
 **Verdict:** Two real issues caught and corrected. Contract mismatch was a genuine architectural insight.
 
 ### Iteration 5: Post-correction
 
-**Applied:** Surgical corrections from checker findings.
+**Applied:** Surgical corrections from checker findings. ([post-correction report](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/correctness-reports/c4-correctness-report-final-postfix.md) | [final diagram source](https://github.com/ugoenyioha/prompting-techniques-c4-case-study/blob/main/diagrams/final/c4-opencode-final.puml))
 **Result:** Checker confidence: 90. One remaining PARTIAL that's a genuine out-of-repo limitation.
 **Verdict:** Publishable.
 
@@ -609,4 +609,4 @@ Write your prompts like you'd write process documentation for a sharp but new te
 
 ---
 
-_This article is based on a real five-iteration architecture analysis of the [OpenCode](https://github.com/sst/opencode) codebase. All prompt snippets, scoring tables, checker findings, and corrections are from actual analysis artifacts. The generator prompt, checker prompt, analysis notes, and correctness reports are available in the repository under `docs/architecture/`._
+_This article is based on a real five-iteration architecture analysis of the [OpenCode](https://github.com/sst/opencode) codebase. All prompt snippets, scoring tables, checker findings, and corrections are from actual analysis artifacts. The generator prompt, checker prompt, analysis notes, and correctness reports are all available in the [companion repository](https://github.com/ugoenyioha/prompting-techniques-c4-case-study)._
